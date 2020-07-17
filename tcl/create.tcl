@@ -12,14 +12,10 @@ prj_build $project $projectFolder/filelist.txt $top_entity
 # Set IP repository paths
 set wd [pwd]
 
-puts $wd
-
 open_project $project
 
 set ip_repo_list {}
 lappend ip_repo_list "[file normalize "$wd/../../../../ip_repo"]"
-
-puts ip_repo_list
 
 set obj [get_filesets sources_1]
 set_property "ip_repo_paths" $ip_repo_list $obj
