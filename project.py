@@ -40,21 +40,6 @@ def selectProjectAndSpecialize(options, projectCfgDict):
 
     return projectCfg
 
-def prepareFilelist(projectCfg):
-    # construct full filelist (add error checking)
-    with open(projectCfg["primaryFilelist"]) as primaryFile:
-        filelist = primaryFile.read()
-
-    # parse any secondary files lists that exist (Add error checking)
-    if "secondaryFilelists" in  projectCfg:
-        for key, secondaryFileName in projectCfg["secondaryFilelists"].items():
-            with open(secondaryFileName) as secondaryFile:
-                filelist = filelist%{key : secondaryFile.read()}
-
-    # scrub blank lines from filelist
-    filelist = "\n".join([s.strip() for s in filelist.splitlines() if s.strip()])
-
-    return filelist
 
 def createProject(projectCfg):
 
