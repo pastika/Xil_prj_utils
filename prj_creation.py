@@ -224,7 +224,7 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
     <Option Name="CompiledLibDirActivehdl" Val="$PCACHEDIR/compile_simlib/activehdl"/>
     <Option Name="TargetLanguage" Val="VERILOG"/>
     <Option Name="BoardPart" Val="%(board_part)s"/>
-    <Option Name="board.repoPaths" Val="$PPRDIR/../shared/board_parts"/>
+    <Option Name="BoardPartRepoPaths" Val="$PPRDIR/../shared/board_parts"/>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
