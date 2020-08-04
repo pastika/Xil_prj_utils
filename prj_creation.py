@@ -165,8 +165,8 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
                 fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
 
         if "xdcTarget" in fileListDict:
-            if not fileListDict["xdcTarget"] in fileListDict["xdc"]:
-                filePath = os.path.relpath(os.path.join(basePath, filePath))
+            if not (fileListDict["xdcTarget"] in fileListDict["xdc"]):
+                filePath = os.path.relpath(os.path.join(basePath, fileListDict["xdcTarget"]))
                 if os.path.isfile(filePath):
                     print("[info]: Added xdc file %s"%filePath)
                     fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
@@ -224,7 +224,7 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
     <Option Name="CompiledLibDirActivehdl" Val="$PCACHEDIR/compile_simlib/activehdl"/>
     <Option Name="TargetLanguage" Val="VERILOG"/>
     <Option Name="BoardPart" Val="%(board_part)s"/>
-    <Option Name="BoardPartRepoPaths" Val="$PPRDIR/../shared/board_parts"/>
+    <Option Name="board.repoPaths" Val="$PPRDIR/../shared/board_parts"/>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
