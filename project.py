@@ -5,6 +5,8 @@ from glob import glob
 from . import prj_creation
 
 def parseConfigFile(options):
+
+
     with open(options["projectcfg"], "r") as cfg:
         try:
             projectCfgDict = yaml.safe_load(cfg)
@@ -49,12 +51,15 @@ def createProject(projectCfg):
 
     #check if directory exists
     if os.path.exists(projectCfg["baseDirName"]):
-        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it."%{"dbn": projectCfg["baseDirName"]})
+        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
         exit()
     
     #create directory
     os.mkdir(projectCfg["baseDirName"])
     os.chdir(projectCfg["baseDirName"])
+
+    #make softlink in directory
+    os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
     
     # create golden xpr
     prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
@@ -112,7 +117,7 @@ def createDeviceTree(projectCfg):
 
     
 @click.group(invoke_without_command=True)
-@click.option("--projectcfg", "-p", default="projects.yaml",     help="Cfg file defining avaliable projects in yaml format")
+@click.option("--projectcfg", "-p", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "projects.yaml")),     help="Cfg file defining avaliable projects in yaml format")
 @click.option("--boardpart",  "-b",                              help="Override default board part specification")
 @click.option("--list",       "-l", default=False, is_flag=True, help="List all avaliable projects")
 @click.pass_context
