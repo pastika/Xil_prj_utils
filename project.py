@@ -1,6 +1,7 @@
 import click
 import yaml
 import os
+import shutil
 from glob import glob
 from . import prj_creation
 
@@ -71,7 +72,7 @@ def createProject(projectCfg):
 def cleanProject(projectCfg):
     #rm project dir
     if os.path.lexists(projectCfg["baseDirName"]):
-        os.system("rm -r %s"%projectCfg["baseDirName"])
+        shutil.rmtree(projectCfg["baseDirName"])
 
     # clean up all bd directories
     with open(projectCfg["primaryFilelist"], "r") as cfg:
@@ -85,12 +86,18 @@ def cleanProject(projectCfg):
     if "bd" in fileListDict:
         for bd in fileListDict["bd"]:
             path = os.path.dirname(bd)
-            files = ["hdl/", "shared/", "synth/", "*.bxml", "*_ooc.xdc", "sim/", "ipshared/", "hw_handoff/", "ip/", "ui/"]
-            for file in files:
-                filepath = os.path.join(path, file)
-                for fp in glob(filepath):
-                    if os.path.lexists(fp):
-                        os.system("rm -r %s"%fp)
+            fname = os.path.basename(bd)
+
+            #delete everything in bd folder except the bd
+            for fp in glob(os.path.join(path, "*")):
+                if not fname == os.path.basename(fp):
+                    try:
+                        shutil.rmtree(fp)
+                    except NotADirectoryError:
+                        os.remove(fp)
+                    except OSError:
+                        #maybe its a softlink
+                        os.remove(fp)
 
 def createDeviceTree(projectCfg):
     #create xsa file
