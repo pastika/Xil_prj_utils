@@ -102,8 +102,8 @@ def cleanProject(projectCfg):
 def createDeviceTree(projectCfg):
     #create xsa file
     basePath = projectCfg["basePath"]
-    create_xsa_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_xsa.tcl"))
-    create_dt_overlay_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_dt_overlay.tcl"))
+    create_xsa_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/build_project.tcl"))
+    #create_dt_overlay_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_dt_overlay.tcl"))
     dtPath  = os.path.join(basePath, projectCfg["baseDirName"], "device-tree")
     dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
     prj_path = os.path.join(basePath, projectCfg["baseDirName"])
@@ -115,12 +115,12 @@ def createDeviceTree(projectCfg):
 
     os.chdir(prj_path)
 
-    os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, "%s %s"%(prj_name, dtFile)))
+    os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2))])))
 
     #create device tree overlay
-    os.chdir(dtPath)
+    #os.chdir(dtPath)
     # MAKE processor an option in yaml
-    os.system('xsct %s %s'%(create_dt_overlay_script, "%s %s %s"%(dtFile, repoPath, "psu_cortexa53_0")))
+    #os.system('xsct %s %s'%(create_dt_overlay_script, "%s %s %s"%(dtFile, repoPath, "psu_cortexa53_0")))
 
     
 @click.group(invoke_without_command=True)
