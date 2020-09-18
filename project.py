@@ -14,11 +14,11 @@ def parseConfigFile(options):
         except yaml.YAMLError as exc:
             print("Failed to parse config yaml, yaml error follows:")
             print(exc)
-            exit()
+            exit(-1)
 
     # list all possible projects and exit 
     if options["list"]:
-        print(", ".join(projectCfgDict.keys()))
+        print('\n'.join(projectCfgDict.keys()))
         exit(0)
 
     return projectCfgDict
@@ -32,7 +32,7 @@ def selectProjectAndSpecialize(options, ctxobj):
         projectCfg = projectCfgDict[options["projectname"]]
     except KeyError:
         print("Requested project \"%s\" not found in cfg file"%options["projectname"])
-        exit()
+        exit(-1)
 
     projectCfg["baseDirName"] = options["projectname"]
     projectCfg["basePath"] = ctxobj["projectBase"]
@@ -43,7 +43,7 @@ def selectProjectAndSpecialize(options, ctxobj):
             projectCfg["boardPart"] = options["boardpart"]
         except KeyError:
             print("Option \"boardPart\" missing for requested project \"%s\""%options["projectname"])
-            exit()
+            exit(-1)
 
     return projectCfg
 
@@ -53,7 +53,7 @@ def createProject(projectCfg):
     #check if directory exists
     if os.path.exists(projectCfg["baseDirName"]):
         print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
-        exit()
+        exit(-1)
     
     #create directory
     os.mkdir(projectCfg["baseDirName"])
@@ -81,7 +81,7 @@ def cleanProject(projectCfg):
         except yaml.YAMLError as exc:
             print("Failed to parse file yaml, yaml error follows:")
             print(exc)
-            exit()
+            exit(-1)
 
     if "bd" in fileListDict:
         for bd in fileListDict["bd"]:
