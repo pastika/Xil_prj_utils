@@ -5,6 +5,9 @@ set repoPath [lindex $argv 2]
 set processor [lindex $argv 3]
 set maxThreads [lindex $argv 4]
 
+set_msg_config -severity INFO -suppress
+set_msg_config -severity STATUS -suppress
+
 open_project $project
 
 set_param general.maxThreads $maxThreads
