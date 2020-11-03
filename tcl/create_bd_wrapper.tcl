@@ -8,6 +8,7 @@ set bd_file [lindex $argv 1]
 
 open_project $project
 
+# See https://www.xilinx.com/support/documentation/sw_manuals/xilinx2019_2/ug835-vivado-tcl-commands.pdf#page=1619
 set_msg_config -severity INFO -suppress
 set_msg_config -severity STATUS -suppress
 

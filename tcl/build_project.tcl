@@ -5,6 +5,7 @@ set repoPath [lindex $argv 2]
 set processor [lindex $argv 3]
 set maxThreads [lindex $argv 4]
 
+# See https://www.xilinx.com/support/documentation/sw_manuals/xilinx2019_2/ug835-vivado-tcl-commands.pdf#page=1619
 set_msg_config -severity INFO -suppress
 set_msg_config -severity STATUS -suppress
 
