@@ -99,7 +99,8 @@ def cleanProject(projectCfg):
                         #maybe its a softlink
                         os.remove(fp)
 
-def createDeviceTree(projectCfg):
+# stage: 0 = synthesis, 1 = implementation, 2 = bitfile, 3 = device tree overlay
+def createDeviceTree(projectCfg, stage_start, stage_end, force=False):
     #create xsa file
     basePath = projectCfg["basePath"]
     create_xsa_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/build_project.tcl"))
@@ -115,12 +116,7 @@ def createDeviceTree(projectCfg):
 
     os.chdir(prj_path)
 
-    os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2))])))
-
-    #create device tree overlay
-    #os.chdir(dtPath)
-    # MAKE processor an option in yaml
-    #os.system('xsct %s %s'%(create_dt_overlay_script, "%s %s %s"%(dtFile, repoPath, "psu_cortexa53_0")))
+    os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     
 @click.group(invoke_without_command=True)
@@ -162,14 +158,61 @@ def clean(ctx, projectname):
 @project.command()
 @click.argument("projectname")
 @click.pass_context
+@click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of synthesis")
+def synthesis(ctx, projectname, force):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    createDeviceTree(projectCfg, 0, 0, force) 
+
+@project.command()
+@click.argument("projectname")
+@click.pass_context
+@click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of implementation")
+def implementation(ctx, projectname, force):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    createDeviceTree(projectCfg, 1, 1, force) 
+
+@project.command()
+@click.argument("projectname")
+@click.pass_context
+@click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of bitfile generation")
+def bitfile(ctx, projectname, force):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    createDeviceTree(projectCfg, 2, 2, force) 
+    
+@project.command()
+@click.argument("projectname")
+@click.pass_context
 def devicetree(ctx, projectname):
     params = ctx.params
     params.update(ctx.parent.params)
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg) 
+    createDeviceTree(projectCfg, 3, 3) 
 
+@project.command()
+@click.argument("projectname")
+@click.pass_context
+@click.option("--force",       "-f", default=False, is_flag=True, help="Force full rebuild")
+def build(ctx, projectname, force):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    createDeviceTree(projectCfg, 0, 3, force) 
 
 if __name__ == "__main__":
     project()
