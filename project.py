@@ -100,7 +100,7 @@ def cleanProject(projectCfg):
                         os.remove(fp)
 
 # stage: 0 = synthesis, 1 = implementation, 2 = bitfile, 3 = device tree overlay
-def createDeviceTree(projectCfg, stage_start, stage_end, force=False):
+def projectBuild(projectCfg, stage_start, stage_end, force=False):
     #create xsa file
     basePath = projectCfg["basePath"]
     create_xsa_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/build_project.tcl"))
@@ -165,7 +165,7 @@ def synthesis(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg, 0, 0, force) 
+    projectBuild(projectCfg, 0, 0, force) 
 
 @project.command()
 @click.argument("projectname")
@@ -177,7 +177,7 @@ def implementation(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg, 1, 1, force) 
+    projectBuild(projectCfg, 1, 1, force) 
 
 @project.command()
 @click.argument("projectname")
@@ -189,7 +189,7 @@ def bitfile(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg, 2, 2, force) 
+    projectBuild(projectCfg, 2, 2, force) 
     
 @project.command()
 @click.argument("projectname")
@@ -200,7 +200,7 @@ def devicetree(ctx, projectname):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg, 3, 3) 
+    projectBuild(projectCfg, 3, 3) 
 
 @project.command()
 @click.argument("projectname")
@@ -212,7 +212,7 @@ def build(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createDeviceTree(projectCfg, 0, 3, force) 
+    projectBuild(projectCfg, 0, 3, force) 
 
 if __name__ == "__main__":
     project()
