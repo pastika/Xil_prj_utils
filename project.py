@@ -134,7 +134,7 @@ def project(ctx, projectcfg, boardpart, list):
         click.echo(ctx.get_help())
 
 @project.resultcallback()
-def process_pipeline(status):
+def process_pipeline(status, projectcfg, boardpart, list):
     # The following makes sure it works ~everywhere 
     # E.g. in some systems, status==512 and sys.exit(512) is reported as 0 (success)...
     if status:
