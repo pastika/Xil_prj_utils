@@ -116,7 +116,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 
     os.chdir(prj_path)
 
-    os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     
 @click.group(invoke_without_command=True)
