@@ -1,6 +1,7 @@
 import click
 import yaml
 import os
+import sys
 import shutil
 from glob import glob
 from . import prj_creation
@@ -132,6 +133,13 @@ def project(ctx, projectcfg, boardpart, list):
     if ctx.invoked_subcommand is None and not list:
         click.echo(ctx.get_help())
 
+@project.resultcallback()
+def process_pipeline(status):
+    # The following makes sure it works ~everywhere 
+    # E.g. in some systems, status==512 and sys.exit(512) is reported as 0 (success)...
+    if status:
+        sys.exit(-1)
+        
 @project.command()
 @click.argument("projectname")
 @click.pass_context
