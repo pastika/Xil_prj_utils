@@ -22,15 +22,33 @@ if { $startPoint <= 0 && $endPoint >= 0 && ( $force || [get_property STATUS [get
     wait_on_run synth_1
 }
 
+if { [string first "ERROR" [get_property STATUS [get_runs synth_1]]] != -1 } {
+    reset_msg_config -severity INFO -suppress
+    reset_msg_config -severity STATUS -suppress
+    error "FAILURE: SYNTHESIS ERROR!!!"
+}
+
 if { $startPoint <= 1 && $endPoint >= 1 && ( $force || [get_property STATUS [get_runs impl_1]] == "Not started" || [get_property NEEDS_REFRESH [get_runs impl_1]] ) } {
     reset_run impl_1
     launch_runs impl_1 -jobs $maxThreads
     wait_on_run impl_1
 }
 
+if { [string first "ERROR" [get_property STATUS [get_runs impl_1]]] != -1 } {
+    reset_msg_config -severity INFO -suppress
+    reset_msg_config -severity STATUS -suppress
+    error "FAILURE: IMPLEMENTATION ERROR!!!"
+}
+
 if { $startPoint <= 2 && $endPoint >= 2 && ( $force || ([string first "route_design Complete" [get_property STATUS [get_runs impl_1]]] != -1)) } {
     launch_runs impl_1 -to write_bitstream -jobs $maxThreads
     wait_on_run impl_1
+}
+
+if { [string first "ERROR" [get_property STATUS [get_runs impl_1]]] != -1 } {
+    reset_msg_config -severity INFO -suppress
+    reset_msg_config -severity STATUS -suppress
+    error "FAILURE: BITSTREAM ERROR!!!"
 }
 
 if { $startPoint <= 3 && $endPoint >= 3 && ([get_property STATUS [get_runs impl_1]] == "write_bitstream Complete!") } {

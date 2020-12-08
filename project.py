@@ -67,7 +67,7 @@ def createProject(projectCfg):
     prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
 
     # add source to xpr
-    prj_creation.update_filesets("golden.xpr", projectCfg["project"], projectCfg["primaryFilelist"])
+    return prj_creation.update_filesets("golden.xpr", projectCfg["project"], projectCfg["primaryFilelist"])
     
 
 def cleanProject(projectCfg):
@@ -149,7 +149,7 @@ def create(ctx, projectname):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createProject(projectCfg)
+    return createProject(projectCfg)
     
 @project.command()
 @click.argument("projectname")

@@ -195,7 +195,9 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
     if "bd"  in fileListDict:
         for filePath in fileListDict["bd"]:
             fileName = os.path.basename(filePath)
-            os.system('vivado -mode batch -source %s -tclargs %s'%(os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_bd_wrapper.tcl")), "%s %s"%(prj_name, fileName)))
+            status = os.system('vivado -mode batch -source %s -tclargs %s'%(os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_bd_wrapper.tcl")), "%s %s"%(prj_name, fileName)))
+            if status:
+                return status
     
 
     print("------------------------------------------------------------------------------------------")
