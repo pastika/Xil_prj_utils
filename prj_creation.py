@@ -125,7 +125,7 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
                     print("[info]: Added src file %s"%filePath)
                     fileSetsStrs.append(src_entry%{"filePath": filePath,
                                                    "fileinfo": src_entry_vhd if ext == ".vhd" else src_entry_v,
-                                                   "attributes": "\n".join([src_entry_synth, src_entry_impl]) })
+                                                   "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
 
         # add bd files
         if "bd"  in fileListDict:
@@ -136,7 +136,7 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
                     print("[info]: Added bd file %s"%filePath)
                     fileSetsStrs.append(src_entry%{"filePath": filePath,
                                                    "fileinfo": src_entry_v,
-                                                   "attributes": "\n".join([src_entry_synth, src_entry_impl]) })
+                                                   "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
 
         # --- scan again for coe that must be just above the top level definition
         if "coe" in fileListDict:
