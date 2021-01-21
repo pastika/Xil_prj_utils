@@ -1,6 +1,7 @@
 import click
 import yaml
 import os
+import sys
 import shutil
 from glob import glob
 from . import prj_creation
@@ -66,7 +67,7 @@ def createProject(projectCfg):
     prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
 
     # add source to xpr
-    prj_creation.update_filesets("golden.xpr", projectCfg["project"], projectCfg["primaryFilelist"])
+    return prj_creation.update_filesets("golden.xpr", projectCfg["project"], projectCfg["primaryFilelist"])
     
 
 def cleanProject(projectCfg):
@@ -132,6 +133,13 @@ def project(ctx, projectcfg, boardpart, list):
     if ctx.invoked_subcommand is None and not list:
         click.echo(ctx.get_help())
 
+@project.resultcallback()
+def process_pipeline(status, projectcfg, boardpart, list):
+    # The following makes sure it works ~everywhere 
+    # E.g. in some systems, status==512 and sys.exit(512) is reported as 0 (success)...
+    if status:
+        sys.exit(-1)
+        
 @project.command()
 @click.argument("projectname")
 @click.pass_context
@@ -141,7 +149,7 @@ def create(ctx, projectname):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    createProject(projectCfg)
+    return createProject(projectCfg)
     
 @project.command()
 @click.argument("projectname")
@@ -165,7 +173,7 @@ def synthesis(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    projectBuild(projectCfg, 0, 0, force) 
+    return projectBuild(projectCfg, 0, 0, force) 
 
 @project.command()
 @click.argument("projectname")
@@ -177,7 +185,7 @@ def implementation(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    projectBuild(projectCfg, 1, 1, force) 
+    return projectBuild(projectCfg, 1, 1, force) 
 
 @project.command()
 @click.argument("projectname")
@@ -189,7 +197,7 @@ def bitfile(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    projectBuild(projectCfg, 2, 2, force) 
+    return projectBuild(projectCfg, 2, 2, force) 
     
 @project.command()
 @click.argument("projectname")
@@ -200,7 +208,7 @@ def devicetree(ctx, projectname):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    projectBuild(projectCfg, 3, 3) 
+    return projectBuild(projectCfg, 3, 3) 
 
 @project.command()
 @click.argument("projectname")
@@ -212,7 +220,7 @@ def build(ctx, projectname, force):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    projectBuild(projectCfg, 0, 3, force) 
+    return projectBuild(projectCfg, 0, 3, force) 
 
 if __name__ == "__main__":
     project()
