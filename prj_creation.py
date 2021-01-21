@@ -110,14 +110,16 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
     # Step 2b: format source files
     # ---------------------------
     
-    if ("hdl" in fileListDict and len(fileListDict["hdl"]) > 0) or ("bd"  in fileListDict and len(fileListDict["bd"]) > 0) or ("coe" in fileListDict and len(fileListDict["coe"]) > 0):
+    if (("hdl" in fileListDict and (fileListDict["hdl"] is not None) and len(fileListDict["hdl"]) > 0) or
+        ("bd"  in fileListDict and (fileListDict["bd"] is not None) and len(fileListDict["bd"]) > 0) or
+        ("coe" in fileListDict and (fileListDict["coe"] is not None) and len(fileListDict["coe"]) > 0)):
       
         fileSetsStrs.append(filesets_header)
       
         fileSetsStrs.append(src_header)
 
         # add hdl files
-        if "hdl" in fileListDict:
+        if "hdl" in fileListDict and fileListDict["hdl"] is not None:
             for filePath in fileListDict["hdl"]:
                 filePath = os.path.relpath(os.path.join(basePath, filePath))
                 if os.path.isfile(filePath):
@@ -128,7 +130,7 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
                                                    "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
 
         # add bd files
-        if "bd"  in fileListDict:
+        if "bd"  in fileListDict and fileListDict["bd"] is not None:
             for filePath in fileListDict["bd"]:
                 filePath = os.path.relpath(os.path.join(basePath, filePath))
                 if os.path.isfile(filePath):
@@ -139,7 +141,7 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
                                                    "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
 
         # --- scan again for coe that must be just above the top level definition
-        if "coe" in fileListDict:
+        if "coe" in fileListDict and fileListDict["coe"] is not None:
             for filePath in fileListDict["coe"]:
                 filePath = os.path.relpath(os.path.join(basePath, filePath))
                 if os.path.isfile(filePath):
