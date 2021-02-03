@@ -160,14 +160,15 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
     if ("xdc" in fileListDict and len(fileListDict["xdc"]) > 0) or ("xdcTarget" in fileListDict):
         fileSetsStrs.append(xdc_header)
       
-        for filePath in fileListDict["xdc"]:
-            filePath = os.path.relpath(os.path.join(basePath, filePath))
-            if os.path.isfile(filePath):
-                print("[info]: Added xdc file %s"%filePath)
-                fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
+        if "xdc" in fileListDict and len(fileListDict["xdc"]) > 0:
+            for filePath in fileListDict["xdc"]:
+                filePath = os.path.relpath(os.path.join(basePath, filePath))
+                if os.path.isfile(filePath):
+                    print("[info]: Added xdc file %s"%filePath)
+                    fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
 
         if "xdcTarget" in fileListDict:
-            if not (fileListDict["xdcTarget"] in fileListDict["xdc"]):
+            if ("xdc" in fileListDict and len(fileListDict["xdc"]) > 0) and not (fileListDict["xdcTarget"] in fileListDict["xdc"]):
                 filePath = os.path.relpath(os.path.join(basePath, fileListDict["xdcTarget"]))
                 if os.path.isfile(filePath):
                     print("[info]: Added xdc file %s"%filePath)
