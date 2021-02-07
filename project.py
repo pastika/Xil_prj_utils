@@ -96,8 +96,8 @@ def createProject(projectCfg):
     except: 
         pass
     
-    print (fileListDict["xdc"])
-    print (fileListDict["bd"])
+    # print (fileListDict["xdc"])
+    # print (fileListDict["bd"])
     # add source to xpr
     return prj_creation.update_filesets("golden.xpr", projectCfg["project"],fileListDict)
     
