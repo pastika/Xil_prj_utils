@@ -61,7 +61,7 @@ util_entry = """    <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/uti
 filesets_footer = '  </FileSets>'
 
 
-def update_filesets (golden_name, prj_name, filelist, basePath=".."):
+def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     # ---------------------------
     # Constants
     # ---------------------------
@@ -98,13 +98,13 @@ def update_filesets (golden_name, prj_name, filelist, basePath=".."):
 
     fileSetsStrs = []
     
-    with open(os.path.join(basePath, filelist), "r") as cfg:
-        try:
-            fileListDict = yaml.safe_load(cfg)
-        except yaml.YAMLError as exc:
-            print("Failed to parse file yaml, yaml error follows:")
-            print(exc)
-            exit()
+    # with open(os.path.join(basePath, filelist), "r") as cfg:
+    #     try:
+    #         fileListDict = yaml.safe_load(cfg)
+    #     except yaml.YAMLError as exc:
+    #         print("Failed to parse file yaml, yaml error follows:")
+    #         print(exc)
+    #         exit()
 
     # ---------------------------
     # Step 2b: format source files
