@@ -66,8 +66,40 @@ def createProject(projectCfg):
     # create golden xpr
     prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
 
+    #read filelist as yaml 
+    filelist =  projectCfg["primaryFilelist"];
+    basePath="..";  
+    with open(os.path.join(basePath, filelist), "r") as cfg:
+        try:
+            fileListDict = yaml.safe_load(cfg)
+        except yaml.YAMLError as exc:
+            print("Failed to parse file yaml, yaml error follows:")
+            print(exc)
+            exit()
+    #read extrafilelist if exist 
+    try:    
+        extrafilelist =  projectCfg["extraFilelist"];
+        try: #extend (if list) , append (if str) xdc 
+            if isinstance(extrafilelist["xdc"], list):
+                fileListDict["xdc"].extend(extrafilelist["xdc"]); 
+            else:
+                fileListDict["xdc"].append(extrafilelist["xdc"]);               
+        except: 
+            pass
+        try: # override bd 
+            if isinstance(extrafilelist["xdc"], list):  
+                fileListDict["bd"] = extrafilelist["bd"];  
+            else:
+                fileListDict["bd"] = [extrafilelist["bd"]];     
+        except: 
+            pass
+    except: 
+        pass
+    
+    # print (fileListDict["xdc"])
+    # print (fileListDict["bd"])
     # add source to xpr
-    return prj_creation.update_filesets("golden.xpr", projectCfg["project"], projectCfg["primaryFilelist"])
+    return prj_creation.update_filesets("golden.xpr", projectCfg["project"],fileListDict)
     
 
 def cleanProject(projectCfg):
@@ -84,6 +116,19 @@ def cleanProject(projectCfg):
             print(exc)
             exit(-1)
 
+    #read extrafilelist if exist 
+    try:    
+        extrafilelist =  projectCfg["extraFilelist"];
+        try: # override bd 
+            if isinstance(extrafilelist["xdc"], list):  
+                fileListDict["bd"] = extrafilelist["bd"];  
+            else:
+                fileListDict["bd"] = [extrafilelist["bd"]];   
+        except: 
+            pass
+    except: 
+        pass
+        
     if "bd" in fileListDict:
         for bd in fileListDict["bd"]:
             path = os.path.dirname(bd)
