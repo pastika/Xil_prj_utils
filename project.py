@@ -3,6 +3,7 @@ import yaml
 import os
 import sys
 import shutil
+import builtins
 from glob import glob
 from . import prj_creation
 
@@ -80,15 +81,16 @@ def createProject(projectCfg):
     #read extrafilelist if exist 
     try:    
         extrafilelist =  projectCfg["extraFilelist"];
-        try: #extend (if list) , append (if str) xdc 
-            if isinstance(extrafilelist["xdc"], list):
+        try: #extend (if list) , append (if str) xdc
+            if isinstance(extrafilelist["xdc"], builtins.list):
                 fileListDict["xdc"].extend(extrafilelist["xdc"]); 
             else:
                 fileListDict["xdc"].append(extrafilelist["xdc"]);               
-        except: 
+        except Exception as e:
+            print(e)
             pass
         try: # override bd 
-            if isinstance(extrafilelist["xdc"], list):  
+            if isinstance(extrafilelist["xdc"], builtins.list):  
                 fileListDict["bd"] = extrafilelist["bd"];  
             else:
                 fileListDict["bd"] = [extrafilelist["bd"]];     
@@ -96,7 +98,7 @@ def createProject(projectCfg):
             pass
     except: 
         pass
-    
+
     # print (fileListDict["xdc"])
     # print (fileListDict["bd"])
     # add source to xpr
