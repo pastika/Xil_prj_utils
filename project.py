@@ -169,7 +169,6 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 @click.group(invoke_without_command=True)
 @click.option("--projectcfg", "-p", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "projects.yaml")),     help="Cfg file defining avaliable projects in yaml format")
 @click.option("--boardpart",  "-b",                              help="Override default board part specification")
-@click.option("--list",       "-l", default=False, is_flag=True, help="List all avaliable projects")
 @click.pass_context
 def project(ctx, projectcfg, boardpart, list):
     ctx.ensure_object(dict)
@@ -267,6 +266,19 @@ def build(ctx, projectname, force):
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
     return projectBuild(projectCfg, 0, 3, force) 
+
+if __name__ == "__main__":
+    project()
+
+@project.command()
+@click.pass_context
+def list(ctx):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    params["list"] = True
+
+    parseConfigFile(params)
 
 if __name__ == "__main__":
     project()
