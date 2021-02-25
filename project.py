@@ -36,6 +36,7 @@ def selectProjectAndSpecialize(options, ctxobj):
         exit(-1)
 
     projectCfg["baseDirName"] = options["projectname"]
+    projectCfg["project"] = options["projectname"]+".xpr"
     projectCfg["basePath"] = ctxobj["projectBase"]
     
     # override 
