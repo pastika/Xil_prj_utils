@@ -18,7 +18,7 @@ def parseConfigFile(options):
             exit(-1)
 
     # list all possible projects and exit 
-    if options["list"]:
+    if "list" in options and options["list"]:
         print('\n'.join(projectCfgDict.keys()))
         exit(0)
 
@@ -170,22 +170,22 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 @click.option("--projectcfg", "-p", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "projects.yaml")),     help="Cfg file defining avaliable projects in yaml format")
 @click.option("--boardpart",  "-b",                              help="Override default board part specification")
 @click.pass_context
-def project(ctx, projectcfg, boardpart, list):
+def project(ctx, projectcfg, boardpart):
     ctx.ensure_object(dict)
     ctx.obj['projectCfgDoc'] = parseConfigFile(ctx.params)
     ctx.obj['projectBase'] = os.path.abspath(os.path.dirname(__file__) + "/..")
 
-    if ctx.invoked_subcommand is None and not list:
+    if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
 
 @project.resultcallback()
-def process_pipeline(status, projectcfg, boardpart, list):
+def process_pipeline(status, projectcfg, boardpart):
     # The following makes sure it works ~everywhere 
     # E.g. in some systems, status==512 and sys.exit(512) is reported as 0 (success)...
     if status:
         sys.exit(-1)
         
-@project.command()
+@project.command(short_help="Create specified project if it does not already exist")
 @click.argument("projectname")
 @click.pass_context
 def create(ctx, projectname):
@@ -196,7 +196,7 @@ def create(ctx, projectname):
 
     return createProject(projectCfg)
     
-@project.command()
+@project.command(short_help="Remove all generated file for selected project")
 @click.argument("projectname")
 @click.pass_context
 def clean(ctx, projectname):
@@ -208,7 +208,7 @@ def clean(ctx, projectname):
     cleanProject(projectCfg)
     
 
-@project.command()
+@project.command(short_help="Run synthesis on project")
 @click.argument("projectname")
 @click.pass_context
 @click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of synthesis")
@@ -220,7 +220,7 @@ def synthesis(ctx, projectname, force):
 
     return projectBuild(projectCfg, 0, 0, force) 
 
-@project.command()
+@project.command(short_help="Run implementation on project")
 @click.argument("projectname")
 @click.pass_context
 @click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of implementation")
@@ -232,7 +232,7 @@ def implementation(ctx, projectname, force):
 
     return projectBuild(projectCfg, 1, 1, force) 
 
-@project.command()
+@project.command(short_help="Generates bistream file")
 @click.argument("projectname")
 @click.pass_context
 @click.option("--force",       "-f", default=False, is_flag=True, help="Force redo of bitfile generation")
@@ -244,7 +244,7 @@ def bitfile(ctx, projectname, force):
 
     return projectBuild(projectCfg, 2, 2, force) 
     
-@project.command()
+@project.command(short_help="Generates device tree overlay file")
 @click.argument("projectname")
 @click.pass_context
 def devicetree(ctx, projectname):
@@ -255,7 +255,7 @@ def devicetree(ctx, projectname):
 
     return projectBuild(projectCfg, 3, 3) 
 
-@project.command()
+@project.command(short_help="Run full build (synthesis through device tree generation)")
 @click.argument("projectname")
 @click.pass_context
 @click.option("--force",       "-f", default=False, is_flag=True, help="Force full rebuild")
@@ -270,7 +270,7 @@ def build(ctx, projectname, force):
 if __name__ == "__main__":
     project()
 
-@project.command()
+@project.command(short_help="Lists all avaliable projects")
 @click.pass_context
 def list(ctx):
     params = ctx.params
