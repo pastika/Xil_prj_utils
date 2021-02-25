@@ -14,5 +14,8 @@ set_msg_config -severity STATUS -suppress
 
 # Create the top level wrapper for the project
 make_wrapper -files [get_files $bd_file] -top -import
+
+reset_msg_config -severity INFO -suppress
+reset_msg_config -severity STATUS -suppress
 ######################################################################
 
