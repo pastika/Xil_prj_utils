@@ -9,7 +9,6 @@ from . import prj_creation
 
 def parseConfigFile(options):
 
-
     with open(options["projectcfg"], "r") as cfg:
         try:
             projectCfgDict = yaml.safe_load(cfg)
@@ -167,6 +166,19 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 
     return os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
+def projectReport(projectCfg, run="impl_1"):
+    #create xsa file
+    basePath = projectCfg["basePath"]
+    create_report_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_reports.tcl"))
+    #create_dt_overlay_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_dt_overlay.tcl"))
+    dtPath  = os.path.join(basePath, projectCfg["baseDirName"], "device-tree")
+    dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
+    prj_path = os.path.join(basePath, projectCfg["baseDirName"])
+    prj_name = os.path.join(basePath, projectCfg["baseDirName"], projectCfg["project"])
+    
+    os.chdir(prj_path)
+
+    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_report_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], str(int(os.cpu_count()/2)), run])))
     
 @click.group(invoke_without_command=True)
 @click.option("--projectcfg", "-p", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "projects.yaml")),     help="Cfg file defining avaliable projects in yaml format")
@@ -269,8 +281,17 @@ def build(ctx, projectname, force):
 
     return projectBuild(projectCfg, 0, 3, force) 
 
-if __name__ == "__main__":
-    project()
+@project.command(short_help="Create post implementation reports")
+@click.argument("projectname")
+@click.pass_context
+@click.option("--run",       "-r", default="impl_1", help="Select run to create reports for")
+def report(ctx, projectname, run):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    return projectReport(projectCfg, run)
 
 @project.command(short_help="Lists all avaliable projects")
 @click.pass_context
