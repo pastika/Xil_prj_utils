@@ -16,8 +16,8 @@ puts $run
 
 open_run $run
 
-report_timing_summary -max_paths 10 -file timing_summary.rpt
-report_utilization -file utilization_summary.rpt
+report_timing_summary -max_paths 10 -file timing_summary.txt
+report_utilization -hierarchical -file utilization_summary.txt
 
 reset_msg_config -severity INFO -suppress
 reset_msg_config -severity STATUS -suppress
