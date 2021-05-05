@@ -164,8 +164,19 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 
     os.chdir(prj_path)
 
-    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
+    if retval: return retval
+
+    #generate the dtbo from the dtsi file
+    if not (stage_start > 3 or stage_end < 3):
+        os.chdir(dtPath)
+        retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -I dts pl.dtsi -O dtb -o pl.dtbo')
+        return retval_dtbo
+
+    return retval
+    
+    
 def projectReport(projectCfg, run="impl_1"):
     #create xsa file
     basePath = projectCfg["basePath"]
