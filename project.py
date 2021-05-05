@@ -157,7 +157,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
     prj_path = os.path.join(basePath, projectCfg["baseDirName"])
     prj_name = os.path.join(basePath, projectCfg["baseDirName"], projectCfg["project"])
-    repoPath = os.path.join(basePath, "shared/device-tree-xlnx")
+    repoPath = os.path.join(basePath, "prj_utils/device-tree-xlnx")
     
     if not os.path.exists(dtPath):
         os.mkdir(dtPath)
