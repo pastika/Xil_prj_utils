@@ -64,9 +64,6 @@ def createProject(projectCfg):
     #make softlink in directory
     os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
     
-    # create golden xpr
-    prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
-
     #read filelist as yaml 
     filelist =  projectCfg["primaryFilelist"];
     basePath="..";  
@@ -97,6 +94,9 @@ def createProject(projectCfg):
             pass
     except: 
         pass
+
+    # create golden xpr
+    prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"], fileListDict["ip_repo"])
 
     # print (fileListDict["xdc"])
     # print (fileListDict["bd"])
