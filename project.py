@@ -6,6 +6,7 @@ import shutil
 import builtins
 from glob import glob
 from . import prj_creation
+from . import uHALXML_creation
 
 def parseConfigFile(options):
 
@@ -23,6 +24,7 @@ def parseConfigFile(options):
         exit(0)
 
     return projectCfgDict
+
 
 def selectProjectAndSpecialize(options, ctxobj):
 
@@ -49,21 +51,7 @@ def selectProjectAndSpecialize(options, ctxobj):
 
     return projectCfg
 
-
-def createProject(projectCfg):
-
-    #check if directory exists
-    if os.path.exists(projectCfg["baseDirName"]):
-        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
-        exit(-1)
-    
-    #create directory
-    os.mkdir(projectCfg["baseDirName"])
-    os.chdir(projectCfg["baseDirName"])
-
-    #make softlink in directory
-    os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
-    
+def readDesignYaml(projectCfg):
     #read filelist as yaml 
     filelist =  projectCfg["primaryFilelist"];
     basePath="..";  
@@ -95,13 +83,33 @@ def createProject(projectCfg):
     except: 
         pass
 
+    return fileListDict
+
+
+def createProject(projectCfg):
+
+    #check if directory exists
+    if os.path.exists(projectCfg["baseDirName"]):
+        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
+        exit(-1)
+    
+    #create directory
+    os.mkdir(projectCfg["baseDirName"])
+    os.chdir(projectCfg["baseDirName"])
+
+    #make softlink in directory
+    os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
+    
+    #read filelist as yaml
+    fileListDict = readDesignYaml(projectCfg)
+    
     # create golden xpr
     prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"], fileListDict["ip_repo"])
 
     # print (fileListDict["xdc"])
     # print (fileListDict["bd"])
     # add source to xpr
-    return prj_creation.update_filesets("golden.xpr", projectCfg["project"],fileListDict)
+    return prj_creation.update_filesets("golden.xpr", projectCfg["project"], fileListDict)
     
 
 def cleanProject(projectCfg):
@@ -291,6 +299,24 @@ def build(ctx, projectname, force):
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
     return projectBuild(projectCfg, 0, 3, force) 
+
+@project.command(short_help="Create uHAL XML address tables")
+@click.argument("projectname")
+@click.pass_context
+def xml(ctx, projectname):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    os.chdir(projectCfg["baseDirName"])
+    
+    #read filelist as yaml
+    fileListDict = readDesignYaml(projectCfg)
+
+    uHALXML_creation.produceuHALXML("device-tree/pl.dtbo", fileListDict["ip_repo"], "..")
+
+    return 0
 
 @project.command(short_help="Create post implementation reports")
 @click.argument("projectname")
