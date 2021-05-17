@@ -4,8 +4,14 @@ import os
 import sys
 
 class UHALXMLProducerFactory:
-    def __init__(self, ip_repos:list):
+    def __init__(self, ip_repos:list, fullFragment):
         self._uhalXMLProducers = {}
+
+        self._fullFragment = fullFragment
+
+        # Add producers directory to python path so everyone can access base class
+        dirName = os.path.dirname(os.path.realpath(__file__))
+        sys.path.append(os.path.join(dirName, "uHALXMLProducers"))
 
         # discover possible IP locations 
         if ip_repos != []:

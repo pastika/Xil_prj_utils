@@ -1,3 +1,7 @@
+from uhalXMLProducerBase import UHALXMLProducerBase
+
+import os
+
 cdma_axi_template = """<node>
   <!-- Memory page segmentation based on
     https://www.xilinx.com/support/documentation/ip_documentation/axi_cdma/v4_1/pg034-axi-cdma.pdf
@@ -45,25 +49,24 @@ cdma_status_template = """<node>
 </node >
 """
 
-top_level_node_template = '<node id=""	    module="file://modules/cdma_axi.xml"	          address="0x80010000"/>'
+top_level_node_template = '<node id="%(label)s"	    module="file://modules/cdma_axi.xml"	          address="%(addr)s"/>'
 
 # Class MUST be named UHALXMLProducer
-class UHALXMLProducer:
+class UHALXMLProducer(UHALXMLProducerBase):
     def __init__(self, factory):
+        # Class MUST have "name" attribute defined and this must match the dtbo name of the IP it is meant to manage 
         self.name = "dma"
 
-    def produce(self, fragment):
-        try:
-            address = fragment['reg'][2]
-        except(KeyError, IndexError):
-            print("Required IP property 'reg' not found")
-            return
+    # CLass MUST define produce_impl which will produce the xml map file(s) and return the top level node for the module 
+    def produce_impl(self, fragment, xmlDir, address, label):
 
-        try:
-            label = fragment['label'][1]
-        except(KeyError, IndexError):
-            print("Required IP property 'label' not found")
-            return
+        with open(os.path.join(xmlDir, "modules", "cdma_axi.xml"), "w") as f:
+            f.write(cdma_axi_template)
 
-        # Some prints to identify which IP is found
-        print("Creating %s entry at address %s"%(self.name, address)) 
+        with open(os.path.join(xmlDir, "modules", "cdma_ctrl.xml"), "w") as f:
+            f.write(cdma_ctrl_template)
+
+        with open(os.path.join(xmlDir, "modules", "cdma_status.xml"), "w") as f:
+            f.write(cdma_status_template)
+        
+        return top_level_node_template%{"label": label, "addr": address}

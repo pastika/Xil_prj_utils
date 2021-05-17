@@ -309,12 +309,12 @@ def xml(ctx, projectname):
 
     projectCfg = selectProjectAndSpecialize(params, ctx.obj)
 
-    os.chdir(projectCfg["baseDirName"])
+    os.chdir(os.path.join(projectCfg["basePath"], projectCfg["baseDirName"]))
     
     #read filelist as yaml
     fileListDict = readDesignYaml(projectCfg)
 
-    uHALXML_creation.produceuHALXML("device-tree/pl.dtbo", fileListDict["ip_repo"], "..")
+    uHALXML_creation.produceuHALXML("device-tree/pl.dtbo", fileListDict["ip_repo"], "..", "uHAL_xml")
 
     return 0
 
