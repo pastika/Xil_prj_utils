@@ -48,3 +48,10 @@ class UHALXMLProducerFactory:
             return self._uhalXMLProducers[cleanKey].produce
         else:
             raise KeyError(f"No key \"{cleanKey}\" in UHALXMLProducerFactory")
+
+    def getImpl(self, key):
+        cleanKey = key.split("@")[0]
+        if cleanKey in self._uhalXMLProducers:
+            return self._uhalXMLProducers[cleanKey].produce_impl
+        else:
+            raise KeyError(f"No key \"{cleanKey}\" in UHALXMLProducerFactory")
