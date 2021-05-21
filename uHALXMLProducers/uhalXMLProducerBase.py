@@ -7,6 +7,19 @@ class UHALXMLProducerBase:
 
         self.factory = factory
 
+    def getModule(self, target_label):
+        #Messy ... find the target module with "label" target_lable
+        targetFragment = None
+        for key, frag in self.factory._fullFragment.items():
+            try:
+                if self.getProperty(frag, "label") == target_label:
+                    targetFragment = frag
+                    break
+            except(KeyError, TypeError):
+                pass
+
+        return targetFragment
+
     def getProperty(self, fragment, name, index = 1):
         try:
             return fragment[name][index]
