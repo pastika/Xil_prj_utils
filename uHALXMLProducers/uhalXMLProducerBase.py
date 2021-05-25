@@ -12,7 +12,7 @@ class UHALXMLProducerBase:
         targetFragment = None
         for key, frag in self.factory._fullFragment.items():
             try:
-                if self.getProperty(frag, "label") == target_label:
+                if self.getProperty(frag, "instance_id") == target_label:
                     targetFragment = frag
                     break
             except(KeyError, TypeError):
@@ -29,7 +29,10 @@ class UHALXMLProducerBase:
     def _getNameAndLabel(self, fragment):
         address = self.getProperty(fragment, 'reg', 2)
 
-        label = self.getProperty(fragment, 'label')
+        try:
+            label = self.getProperty(fragment, 'label')
+        except(KeyError):
+            label = self.getProperty(fragment, 'instance_id')
 
         # Some prints to identify which IP is found
         print("Creating %s entry at address %s"%(label, address))
