@@ -85,8 +85,12 @@ def readDesignYaml(projectCfg):
 
     return fileListDict
 
+def addGitFilters():
+    os.system('git config filter.jsonsort.clean "python3 -E -m json.tool --sort-keys"')
 
 def createProject(projectCfg):
+
+    addGitFilters()
 
     #check if directory exists
     if os.path.exists(projectCfg["baseDirName"]):
@@ -344,5 +348,13 @@ def list(ctx):
 
     parseConfigFile(params)
 
+@project.command(short_help="Add git filters")
+@click.pass_context
+def addgitfilters(ctx):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    addGitFilters()
+    
 if __name__ == "__main__":
     project()
