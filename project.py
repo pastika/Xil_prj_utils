@@ -6,6 +6,7 @@ import shutil
 import builtins
 from glob import glob
 from . import prj_creation
+from . import uHALXML_creation
 
 def parseConfigFile(options):
 
@@ -23,6 +24,7 @@ def parseConfigFile(options):
         exit(0)
 
     return projectCfgDict
+
 
 def selectProjectAndSpecialize(options, ctxobj):
 
@@ -49,24 +51,7 @@ def selectProjectAndSpecialize(options, ctxobj):
 
     return projectCfg
 
-
-def createProject(projectCfg):
-
-    #check if directory exists
-    if os.path.exists(projectCfg["baseDirName"]):
-        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
-        exit(-1)
-    
-    #create directory
-    os.mkdir(projectCfg["baseDirName"])
-    os.chdir(projectCfg["baseDirName"])
-
-    #make softlink in directory
-    os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
-    
-    # create golden xpr
-    prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"])
-
+def readDesignYaml(projectCfg):
     #read filelist as yaml 
     filelist =  projectCfg["primaryFilelist"];
     basePath="..";  
@@ -98,10 +83,37 @@ def createProject(projectCfg):
     except: 
         pass
 
+    return fileListDict
+
+def addGitFilters():
+    os.system('git config filter.jsonsort.clean "python3 -E -m json.tool --sort-keys"')
+
+def createProject(projectCfg):
+
+    addGitFilters()
+
+    #check if directory exists
+    if os.path.exists(projectCfg["baseDirName"]):
+        print("Project dir %(dbn)s already exists. Use './project clean %(dbn)s' to remove it (DO NOT SIMPLY DELETE IT)."%{"dbn": projectCfg["baseDirName"]})
+        exit(-1)
+    
+    #create directory
+    os.mkdir(projectCfg["baseDirName"])
+    os.chdir(projectCfg["baseDirName"])
+
+    #make softlink in directory
+    os.symlink(os.path.relpath(os.path.join(projectCfg["basePath"], "project")), projectCfg["baseDirName"])
+    
+    #read filelist as yaml
+    fileListDict = readDesignYaml(projectCfg)
+    
+    # create golden xpr
+    prj_creation.generate_golden(projectCfg["project"], projectCfg["device"], projectCfg["boardPart"], fileListDict["ip_repo"])
+
     # print (fileListDict["xdc"])
     # print (fileListDict["bd"])
     # add source to xpr
-    return prj_creation.update_filesets("golden.xpr", projectCfg["project"],fileListDict)
+    return prj_creation.update_filesets("golden.xpr", projectCfg["project"], fileListDict)
     
 
 def cleanProject(projectCfg):
@@ -157,15 +169,30 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
     prj_path = os.path.join(basePath, projectCfg["baseDirName"])
     prj_name = os.path.join(basePath, projectCfg["baseDirName"], projectCfg["project"])
-    repoPath = os.path.join(basePath, "shared/device-tree-xlnx")
+    repoPath = os.path.join(basePath, "prj_utils/device-tree-xlnx")
     
     if not os.path.exists(dtPath):
         os.mkdir(dtPath)
 
     os.chdir(prj_path)
 
-    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
+    if retval: return retval
+
+    #generate the dtbo from the dtsi file
+    if not (stage_start > 3 or stage_end < 3):
+        os.chdir(dtPath)
+        if "customdtsi" in projectCfg:
+            cdtsi = os.path.join(basePath, projectCfg["customdtsi"])
+            retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -i . -i %s -I dts %s -O dtb -o pl.dtbo'%(os.path.dirname(os.path.realpath(cdtsi)), cdtsi))
+        else:
+            retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -I dts pl.dtsi -O dtb -o pl.dtbo')
+        return retval_dtbo
+
+    return retval
+    
+    
 def projectReport(projectCfg, run="impl_1"):
     #create xsa file
     basePath = projectCfg["basePath"]
@@ -281,6 +308,24 @@ def build(ctx, projectname, force):
 
     return projectBuild(projectCfg, 0, 3, force) 
 
+@project.command(short_help="Create uHAL XML address tables")
+@click.argument("projectname")
+@click.pass_context
+def xml(ctx, projectname):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    projectCfg = selectProjectAndSpecialize(params, ctx.obj)
+
+    os.chdir(os.path.join(projectCfg["basePath"], projectCfg["baseDirName"]))
+    
+    #read filelist as yaml
+    fileListDict = readDesignYaml(projectCfg)
+
+    uHALXML_creation.produceuHALXML("device-tree/pl.dtbo", fileListDict["ip_repo"], "..", "uHAL_xml")
+
+    return 0
+
 @project.command(short_help="Create post implementation reports")
 @click.argument("projectname")
 @click.pass_context
@@ -303,5 +348,13 @@ def list(ctx):
 
     parseConfigFile(params)
 
+@project.command(short_help="Add git filters")
+@click.pass_context
+def addgitfilters(ctx):
+    params = ctx.params
+    params.update(ctx.parent.params)
+
+    addGitFilters()
+    
 if __name__ == "__main__":
     project()

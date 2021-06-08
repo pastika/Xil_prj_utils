@@ -231,7 +231,7 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
     <Option Name="ActiveSimSet" Val="sim_1"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
-    <Option Name="IPRepoPath" Val="$PPRDIR/../shared/ip_repo"/>
+%(ip_repos)s
     <Option Name="IPOutputRepo" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="IPCachePermission" Val="disable"/>
     <Option Name="EnableCoreContainer" Val="TRUE"/>
@@ -361,7 +361,9 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
   </DashboardSummary>
 </Project>"""
 
-def generate_golden (prj_name, dev_name, brd_name):
+ip_repo_template = """    <Option Name="IPRepoPath" Val="$PPRDIR/../%s"/>"""
+
+def generate_golden (prj_name, dev_name, brd_name, ip_repo_list, basePath=".."):
     # constants   
     synth_suffix = '" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true"'
     impl_suffix = '" ConstrsSet="constrs_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" GenFullBitstream="true"'
@@ -370,7 +372,8 @@ def generate_golden (prj_name, dev_name, brd_name):
                             "dev_name"   : dev_name,
                             "board_part" : brd_name,
                             "synth_part" : "".join([dev_name, synth_suffix]),
-                            "impl_part"  : "".join([dev_name, impl_suffix]),}
+                            "impl_part"  : "".join([dev_name, impl_suffix]),
+                            "ip_repos"   : "\n".join([ip_repo_template%ip_repo for ip_repo in ip_repo_list])}
 
     with open("golden.xpr", "w") as fout:
         fout.write(outfile)
