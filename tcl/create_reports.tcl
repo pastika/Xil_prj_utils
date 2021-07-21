@@ -19,5 +19,8 @@ open_run $run
 report_timing_summary -max_paths 10 -file timing_summary.txt
 report_utilization -hierarchical -file utilization_summary.txt
 
+report_timing_summary -no_detailed_paths -file timing_short_summary.txt
+report_utilization -hierarchical -hierarchical_depth 3 -file utilization_short_summary.txt
+
 reset_msg_config -severity INFO -suppress
 reset_msg_config -severity STATUS -suppress
