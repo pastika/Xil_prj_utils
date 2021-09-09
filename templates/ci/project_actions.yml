@@ -1,0 +1,51 @@
+variables:
+  # Cf. https://docs.gitlab.com/ee/ci/yaml/README.html#git-submodule-strategy
+  GIT_SUBMODULE_STRATEGY: recursive
+  # set to remedy issues from git repository caching 
+  GIT_STRATEGY: clone
+  # set unique directory for each git checkout https://docs.gitlab.com/ee/ci/runners/README.html#handling-concurrency
+  # this setting needs debugging
+  GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/$CI_PROJECT_PATH 
+
+.list_project:
+    image: python:latest
+    before_script:
+        - pip install --no-cache-dir -r requirements.txt
+    script:
+        - ./project list
+
+.setup_vivado_20192:
+    tags:
+        - docker-privileged-xl
+    image:
+        name: gitlab-registry.cern.ch/cms-hgcal-firmware/vivado-docker/sl7_vivado2019.2_x11
+        entrypoint: [""]
+    before_script:
+        - export XILINXD_LICENSE_FILE=2112@licenxilinx
+        - source /opt/Xilinx/Vivado/2019.2/settings64.sh
+        # without export: "RuntimeError: Click will abort further execution because Python 3 was configured to use ASCII as encoding for the environment."
+        - export LC_ALL=en_US.utf-8
+        - export LANG=en_US.utf-8
+        # pip3 install --no-cache-dir -r requirements.txt /  PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.6'
+        - pip3 install --no-cache-dir --user -r requirements.txt
+
+.build_project:
+    extends: .setup_vivado_20192
+    script:
+        - ./project create ${JOB_NAME}
+        - ./project build  ${JOB_NAME}
+        - ./project xml    ${JOB_NAME}
+        - ./project report ${JOB_NAME}
+    artifacts:
+        paths:
+        - ${JOB_NAME}/${JOB_NAME}.bit
+        - ${JOB_NAME}/device-tree/pl.dtsi
+        - ${JOB_NAME}/device-tree/pl-full.dtsi
+        - ${JOB_NAME}/device-tree/pl.dtbo
+        - ${JOB_NAME}/uHAL_xml/*.xml
+        - ${JOB_NAME}/uHAL_xml/modules/*.xml
+        - ${JOB_NAME}/*_summary.txt
+    # Example usage needs to set JOB_NAME, for instance with:
+    # parallel:
+    #     matrix:
+    #         - JOB_NAME: [design]
