@@ -183,6 +183,16 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     #generate the dtbo from the dtsi file
     if not (stage_start > 3 or stage_end < 3):
         os.chdir(dtPath)
+
+        # Compile the full dtsi for posterity
+        if "customdtsi" in projectCfg:
+            cdtsi = os.path.join(basePath, projectCfg["customdtsi"])
+            retval_dtsi = os.system('dtc -W no-unit_address_vs_reg -@ -i . -i %s -I dts %s -O dts -o pl-full.dtsi'%(os.path.dirname(os.path.realpath(cdtsi)), cdtsi))
+        else:
+            retval_dtsi = os.system('dtc -W no-unit_address_vs_reg -@ -I dts pl.dtsi -O dts -o pl-full.dtsi')
+        if retval_dtsi: return retval_dtsi
+
+        # Compile the full dtbo
         if "customdtsi" in projectCfg:
             cdtsi = os.path.join(basePath, projectCfg["customdtsi"])
             retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -i . -i %s -I dts %s -O dtb -o pl.dtbo'%(os.path.dirname(os.path.realpath(cdtsi)), cdtsi))
