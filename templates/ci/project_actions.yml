@@ -31,7 +31,10 @@ variables:
 
 .build_project:
     extends: .setup_vivado_20192
+    variables:
+        MAX_PRE_SLEEP: 0 # Change to N in order to get a random sleep between 0 and N seconds
     script:
+        -  if [ ${MAX_PRE_SLEEP} != 0 ]; then sleep $[ ( $RANDOM % $MAX_PRE_SLEEP ) ]; fi
         - ./project create ${JOB_NAME}
         - ./project build  ${JOB_NAME}
         - ./project xml    ${JOB_NAME}
