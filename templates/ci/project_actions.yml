@@ -37,14 +37,14 @@ variables:
         - ./project xml    ${JOB_NAME}
         - ./project report ${JOB_NAME}
     artifacts:
-        name: ${JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}-debug
+        name: ${JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}-debug
         paths:
         - ${JOB_NAME}
 
 .prepare_outputs:
     extends: .setup_vivado_20192
     artifacts:
-        name: ${JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}
+        name: ${JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}
         paths:
         - ${JOB_NAME}/${JOB_NAME}.bit
         - ${JOB_NAME}/device-tree/pl.dtsi
