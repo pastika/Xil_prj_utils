@@ -43,8 +43,6 @@ variables:
 
 .prepare_outputs:
     extends: .setup_vivado_20192
-    dependencies:
-        - .build_project
     artifacts:
         name: ${JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}
         paths:
