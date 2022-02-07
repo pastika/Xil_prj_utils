@@ -8,6 +8,11 @@ from glob import glob
 from . import prj_creation
 from . import uHALXML_creation
 
+def xil_cpu_count():
+    # Vivado does not like more than 32
+    ncpus = int(os.cpu_count()/2)
+    return min(ncpus,32)
+
 def parseConfigFile(options):
 
     with open(options["projectcfg"], "r") as cfg:
@@ -176,7 +181,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 
     os.chdir(prj_path)
 
-    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(int(os.cpu_count()/2)), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     if retval: return retval
 
@@ -215,7 +220,7 @@ def projectReport(projectCfg, run="impl_1"):
     
     os.chdir(prj_path)
 
-    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_report_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], str(int(os.cpu_count()/2)), run])))
+    return os.system('vivado -mode batch -source %s -tclargs %s'%(create_report_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], str(xil_cpu_count()), run])))
     
 @click.group(invoke_without_command=True)
 @click.option("--projectcfg", "-p", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "projects.yaml")),     help="Cfg file defining avaliable projects in yaml format")
