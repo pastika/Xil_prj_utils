@@ -3,6 +3,7 @@ from .uHALXMLProducerFactory import UHALXMLProducerFactory
 from pyfdt.pyfdt import FdtBlobParse
 import json
 import os
+import shutil
 
 def produceuHALXML(dtboPath, ip_repos:list, base_dir, xmlDir):
     #open device tree
@@ -42,6 +43,8 @@ def produceuHALXML(dtboPath, ip_repos:list, base_dir, xmlDir):
             f.write("  %s\n"%topNode)
 
         f.write("</node>\n")
+
+    shutil.copyfile(os.path.join(base_dir, 'prj_utils', 'uHALXMLProducers', 'connections.xml'), os.path.join(xmlDir, 'connections.xml'))
 
 if __name__ == "__main__":
     produceuHALXML("../tileboard-tester-v1p0/device-tree/pl.dtbo", [], ".")
