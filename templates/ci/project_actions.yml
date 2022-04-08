@@ -14,26 +14,29 @@ variables:
     script:
         - ./project list
 
-.setup_vivado_20192:
+.setup_vivado_template:
+    variables:
+        XILVERSION: 0 # Change this to the version number
     tags:
         - docker-privileged-xl
     image:
-        name: gitlab-registry.cern.ch/cms-hgcal-firmware/vivado-docker/sl7_vivado2019.2_x11
+        name: gitlab-registry.cern.ch/cce/docker_build/vivado:${XILVERSION}
         entrypoint: [""]
     before_script:
         - export XILINXD_LICENSE_FILE=2112@licenxilinx
-        - source /opt/Xilinx/Vivado/2019.2/settings64.sh
+        - source /opt/Xilinx/Vivado/${XILVERSION}/settings64.sh
         # without export: "RuntimeError: Click will abort further execution because Python 3 was configured to use ASCII as encoding for the environment."
         - export LC_ALL=en_US.utf-8
         - export LANG=en_US.utf-8
         # pip3 install --no-cache-dir -r requirements.txt /  PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.6'
         - pip3 install --no-cache-dir --user -r requirements.txt
-
+    
 .build_project:
-    extends: .setup_vivado_20192
+    extends: .setup_vivado_template
     variables:
         PRE_SLEEP: 0 # Change this N to sleep exactly N seconds
         MAX_PRE_SLEEP: 0 # Change to N and keep PRE_SLEEP=0 in order to sleep randomly between 0 and N seconds
+        XILVERSION: 2019.2
     script:
         -  if [[ ${MAX_PRE_SLEEP} != 0 && ${PRE_SLEEP} = 0 ]]; then PRE_SLEEP=$[ ( $RANDOM % $MAX_PRE_SLEEP ) ]; echo "Sleeping $PRE_SLEEP sec (from random max $MAX_PRE_SLEEP sec)"; sleep $PRE_SLEEP; elif [[ ! -z $PRE_SLEEP ]]; then echo "Sleeping $PRE_SLEEP s"; sleep $PRE_SLEEP; fi
         - ./project create ${JOB_NAME}
@@ -46,7 +49,9 @@ variables:
         - ${JOB_NAME}
 
 .prepare_outputs:
-    extends: .setup_vivado_20192
+    extends: .setup_vivado_template
+    variables:
+        XILVERSION: 2019.2
     artifacts:
         name: ${JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}
         paths:
