@@ -51,7 +51,6 @@ variables:
         name: ${JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}
         paths:
         - ${JOB_NAME}/${JOB_NAME}.bit
-        - ${JOB_NAME}/device-tree/pl.dtsi
         - ${JOB_NAME}/device-tree/pl-full.dtsi
         - ${JOB_NAME}/device-tree/pl.dtbo
         - ${JOB_NAME}/uHAL_xml/*.xml
