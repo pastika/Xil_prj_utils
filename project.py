@@ -169,6 +169,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     #create xsa file
     basePath = projectCfg["basePath"]
     create_xsa_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/build_project.tcl"))
+    device_tree_xsct_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/device_tree_xsct.tcl"))
     #create_dt_overlay_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_dt_overlay.tcl"))
     dtPath  = os.path.join(basePath, projectCfg["baseDirName"], "device-tree")
     dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
@@ -182,7 +183,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     os.chdir(prj_path)
 
     retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
-    retval = os.system('xsct %s %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    retval = os.system('xsct %s %s'%(device_tree_xsct_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     if retval: return retval
 
