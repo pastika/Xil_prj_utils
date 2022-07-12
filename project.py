@@ -181,6 +181,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
 
     os.chdir(prj_path)
 
+    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
     retval = os.system('xsct %s %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     if retval: return retval
