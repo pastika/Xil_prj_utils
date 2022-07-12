@@ -12,6 +12,6 @@ if { $startPoint <= 3 && $endPoint >= 3 } {
     hsi::open_hw_design $prj_name.xsa
     hsi::set_repo_path $repoPath
     hsi::create_sw_design sw1 -proc $processor -os device_tree
-    set_property CONFIG.dt_overlay true [hsi::get_os]
+    common::set_property CONFIG.dt_overlay true [hsi::get_os]
     hsi::generate_bsp -dir ./device-tree
 }
