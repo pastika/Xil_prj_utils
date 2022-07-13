@@ -26,7 +26,7 @@ variables:
         - export LC_ALL=en_US.utf-8
         - export LANG=en_US.utf-8
         # pip3 install --no-cache-dir -r requirements.txt /  PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.6'
-        - yum install -y libyaml
+        - yum install -y libyaml dbus-x11
         - pip3 install --no-cache-dir --user -r requirements.txt
     
 .build_project:
