@@ -28,6 +28,7 @@ variables:
         # pip3 install --no-cache-dir -r requirements.txt /  PermissionError: [Errno 13] Permission denied: '/usr/local/lib/python3.6'
         - yum install -y libyaml dbus-x11
         - pip3 install --no-cache-dir --user -r requirements.txt
+        - dbus-uuidgen > /etc/machine-id
     
 .build_project:
     extends: .setup_vivado_template
