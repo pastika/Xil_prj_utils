@@ -18,6 +18,10 @@ src_entry_synth = '          <Attr Name="UsedIn" Val="synthesis"/>'
 src_entry_impl  = '          <Attr Name="UsedIn" Val="implementation"/>'
 src_entry_sim   = '          <Attr Name="UsedIn" Val="simulation"/>'
 
+src_ip_entry = """      <File Path="$PPRDIR/%(filePath)s">
+        <FileInfo SFType="IPXACT"/>
+      </File>"""
+
 
 src_footer = """      <Config>
         <Option Name="DesignMode" Val="RTL"/>
@@ -43,14 +47,16 @@ xdc_footer = """      <Config>
 sim_entry = """    <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
       <Filter Type="Srcs"/>
       <Config>
-        <Option Name="DesignMode" Val="RTL"/>
-        <Option Name="TopAutoSet" Val="TRUE"/>
+%s
         <Option Name="TransportPathDelay" Val="0"/>
         <Option Name="TransportIntDelay" Val="0"/>
         <Option Name="SrcSet" Val="sources_1"/>
       </Config>
     </FileSet>"""
-  
+
+sim_entry_top_auto = """        <Option Name="DesignMode" Val="RTL"/>"""
+sim_entry_top_set  = """        <Option Name="TopModule" Val="%s"/>"""
+
 util_entry = """    <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/utils_1">
       <Filter Type="Utils"/>
       <Config>
@@ -110,9 +116,11 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     # Step 2b: format source files
     # ---------------------------
     
-    if (("hdl" in fileListDict and (fileListDict["hdl"] is not None) and len(fileListDict["hdl"]) > 0) or
-        ("bd"  in fileListDict and (fileListDict["bd"] is not None) and len(fileListDict["bd"]) > 0) or
-        ("coe" in fileListDict and (fileListDict["coe"] is not None) and len(fileListDict["coe"]) > 0)):
+    if (("hdl"      in fileListDict and (fileListDict["hdl"]      is not None) and len(fileListDict["hdl"]) > 0) or
+        ("bd"       in fileListDict and (fileListDict["bd"]       is not None) and len(fileListDict["bd"]) > 0) or
+        ("coe"      in fileListDict and (fileListDict["coe"]      is not None) and len(fileListDict["coe"]) > 0) or
+        ("sim"      in fileListDict and (fileListDict["sim"]      is not None) and len(fileListDict["sim"]) > 0) or
+        ("ip_files" in fileListDict and (fileListDict["ip_files"] is not None) and len(fileListDict["ip_files"]) > 0)):
       
         fileSetsStrs.append(filesets_header)
       
@@ -128,6 +136,24 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
                     fileSetsStrs.append(src_entry%{"filePath": filePath,
                                                    "fileinfo": src_entry_vhd if ext == ".vhd" else src_entry_v,
                                                    "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
+
+        if "sim" in fileListDict and fileListDict["sim"] is not None:
+            for filePath in fileListDict["sim"]:
+                filePath = os.path.relpath(os.path.join(basePath, filePath))
+                if os.path.isfile(filePath):
+                    ext = os.path.splitext(filePath)[1]
+                    print("[info]: Added src file %s"%filePath)
+                    fileSetsStrs.append(src_entry%{"filePath": filePath,
+                                                   "fileinfo": src_entry_vhd if ext == ".vhd" else src_entry_v,
+                                                   "attributes": "\n".join([src_entry_sim]) })
+
+        if "ip_files" in fileListDict and fileListDict["ip_files"] is not None:
+            for filePath in fileListDict["ip_files"]:
+                filePath = os.path.relpath(os.path.join(basePath, filePath))
+                if os.path.isfile(filePath):
+                    ext = os.path.splitext(filePath)[1]
+                    print("[info]: Added ip file %s"%filePath)
+                    fileSetsStrs.append(src_ip_entry%{"filePath": filePath})
 
         # add bd files
         if "bd"  in fileListDict and fileListDict["bd"] is not None:
@@ -168,8 +194,8 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
                     fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
 
         if "xdcTarget" in fileListDict:
+            filePath = os.path.relpath(os.path.join(basePath, fileListDict["xdcTarget"]))
             if ("xdc" in fileListDict and len(fileListDict["xdc"]) > 0) and not (fileListDict["xdcTarget"] in fileListDict["xdc"]):
-                filePath = os.path.relpath(os.path.join(basePath, fileListDict["xdcTarget"]))
                 if os.path.isfile(filePath):
                     print("[info]: Added xdc file %s"%filePath)
                     fileSetsStrs.append(xdc_entry%{"filePath": filePath,})
@@ -178,7 +204,10 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
             filePath = os.path.relpath(os.path.join(basePath, filePath))
             fileSetsStrs.append(xdc_footer%{"filePath": filePath,})
 
-    fileSetsStrs.append(sim_entry)
+    if "topSim" in fileListDict:
+        fileSetsStrs.append(sim_entry%(sim_entry_top_set%(fileListDict["topSim"])))
+    else:
+        fileSetsStrs.append(sim_entry%(sim_entry_top_auto))
     fileSetsStrs.append(util_entry)
   
     fileSetsStrs.append(filesets_footer)
