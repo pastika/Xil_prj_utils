@@ -172,19 +172,30 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     #create_dt_overlay_script = os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_dt_overlay.tcl"))
     dtPath  = os.path.join(basePath, projectCfg["baseDirName"], "device-tree")
     dtFile = os.path.join(dtPath, projectCfg["project"].replace("xpr","xsa"))
+    bitFileName = projectCfg["project"].replace("xpr","bit")
     prj_path = os.path.join(basePath, projectCfg["baseDirName"])
     prj_name = os.path.join(basePath, projectCfg["baseDirName"], projectCfg["project"])
     repoPath = os.path.join(basePath, "prj_utils/device-tree-xlnx")
-    
+    processor = projectCfg["processor"]
+
+    # device tree file name
+    dtsiname = "pl.dtsi"
+
     if not os.path.exists(dtPath):
         os.mkdir(dtPath)
 
     os.chdir(prj_path)
 
-    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, "psu_cortexa53_0", str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
+    retval = os.system('vivado -mode batch -source %s -tclargs %s'%(create_xsa_script, " ".join([prj_name, os.path.splitext(projectCfg["project"])[0], repoPath, processor, str(xil_cpu_count()), str(stage_start), str(stage_end), str(1 if force else 0)])))
 
     if retval: return retval
 
+    #if this is a zynq-7000 we need to translate the bit file to a bin file
+    if "ps7_cortexa9" in processor:
+        with open("translate_bit.bif", "w") as bif:
+            bif.write("all:\n{\n  ./%s\n}\n"%bitFileName)
+        os.system("bootgen -image translate_bit.bif -arch zynq -o ./%s.bin -w -process_bitstream bin"%bitFileName)
+    
     #generate the dtbo from the dtsi file
     if not (stage_start > 3 or stage_end < 3):
         os.chdir(dtPath)
@@ -194,7 +205,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
             cdtsi = os.path.join(basePath, projectCfg["customdtsi"])
             retval_dtsi = os.system('dtc -W no-unit_address_vs_reg -@ -i . -i %s -I dts %s -O dts -o pl-full.dtsi'%(os.path.dirname(os.path.realpath(cdtsi)), cdtsi))
         else:
-            retval_dtsi = os.system('dtc -W no-unit_address_vs_reg -@ -I dts pl.dtsi -O dts -o pl-full.dtsi')
+            retval_dtsi = os.system('dtc -W no-unit_address_vs_reg -@ -I dts %s -O dts -o pl-full.dtsi'%dtsiname)
         if retval_dtsi: return retval_dtsi
 
         # Compile the full dtbo
@@ -202,7 +213,7 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
             cdtsi = os.path.join(basePath, projectCfg["customdtsi"])
             retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -i . -i %s -I dts %s -O dtb -o pl.dtbo'%(os.path.dirname(os.path.realpath(cdtsi)), cdtsi))
         else:
-            retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -I dts pl.dtsi -O dtb -o pl.dtbo')
+            retval_dtbo = os.system('dtc -W no-unit_address_vs_reg -@ -I dts %s -O dtb -o pl.dtbo'%dtsiname)
         return retval_dtbo
 
     return retval
@@ -234,7 +245,7 @@ def project(ctx, projectcfg, boardpart):
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
 
-@project.resultcallback()
+@project.result_callback()
 def process_pipeline(status, projectcfg, boardpart):
     # The following makes sure it works ~everywhere 
     # E.g. in some systems, status==512 and sys.exit(512) is reported as 0 (success)...
