@@ -1,26 +1,11 @@
 echo "Creation du fichier spec..."
 
 name_paquet=$1
+VERSION_ID=$2
+RELEASE=$3
 DIR_TO_INSTALL=$4
 
-#Sanitize inputs based on https://stackoverflow.com/a/94500/665025
-# replace / with _
-THREE=${3////_}
-# replace spaces with _
-THREE=${THREE// /_}
-# clean out anything that's not alphanumeric or an underscore
-THREE=${THREE//[^a-zA-Z0-9_]/}
-
-#Same for $2
-# replace / with _
-TWO=${2////_}
-# replace spaces with _
-TWO=${TWO// /_}
-# clean out anything that's not alphanumeric or an underscore
-TWO=${TWO//[^a-zA-Z0-9_]/}
-
-
-SPEC_FILE="${HOME}/rpmbuild/SPECS/${name_paquet}-${TWO}-${THREE}.spec"
+SPEC_FILE="${HOME}/rpmbuild/SPECS/${name_paquet}-${VERSION_ID}-${RELEASE}.spec"
 
 Big=0
 if [ $# -ge 5 ]
@@ -33,8 +18,8 @@ fi
 ## écriture dans SPEC_FILE
 > $SPEC_FILE
 echo -e "Name:     ${name_paquet}" > $SPEC_FILE
-echo -e "Version:  ${TWO}" >> $SPEC_FILE
-echo -e "Release:  ${THREE}" >> $SPEC_FILE
+echo -e "Version:  ${VERSION_ID}" >> $SPEC_FILE
+echo -e "Release:  ${RELEASE}" >> $SPEC_FILE
 echo -e "Summary:        Install the ${name_paquet} arborescence files on your system in $DIR_TO_INSTALL" >> $SPEC_FILE
 echo -e "URL: ${CI_PROJECT_URL} \n " >> $SPEC_FILE
 

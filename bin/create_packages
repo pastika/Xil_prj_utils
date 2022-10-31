@@ -51,10 +51,13 @@ fi
 
 COMMIT_ID=`echo $CI_COMMIT_SHA | cut -c-8`
 DIR_TO_INSTALL=$2
-VERSION_ID=$CI_COMMIT_REF_NAME ##=branch name
-VERSION_ID=`echo $VERSION_ID | tr - .` ##replace - by .
+# Branch name, with non-alphanumeric characters replaced by underscores and hyphens replaced by dots
+VERSION_ID=${CI_COMMIT_REF_NAME//[^-a-zA-Z0-9_]/_}
+VERSION_ID=${VERSION_ID//-/.}
+# Release (date and commit hash), with non-alphanumeric characters replaced by underscores and hyphens replaced by dots
 RELEASE=`date +%Y.%m.%d.%H.%M.%S`-${COMMIT_ID}
-RELEASE=`echo $RELEASE | tr - .` ##replace - by .
+RELEASE=${RELEASE//[^-a-zA-Z0-9_]/_}
+RELEASE=${RELEASE//-/.}
 
 if [ $Rec == 0 ] && [ $Big == 0 ]
 then 
