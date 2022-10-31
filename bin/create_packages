@@ -1,0 +1,148 @@
+#!/bin/bash
+
+Big=0
+Rec=0
+
+if [ -z "$CI_OUTPUT_DIR" ]
+then
+	CI_OUTPUT_DIR="public"
+fi
+
+# Check the source directory exists
+if [ ! -d "${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}" ]
+then
+	mkdir -p ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+fi
+
+case $1 in
+	"-R" )
+	Rec=1
+	shift
+	;;
+	"-B" )
+	Big=1
+	shift
+	;;
+	"-RB" )
+	Rec=1
+	Big=1
+	shift
+	;;
+	"-*")
+	echo "No well option given: you have to put -R, -B or -RB"
+	exit 1
+	;;
+esac
+
+if [ $# -ne 2 ]
+then
+	echo "Wrong number of arguments given script takes [options] and exactly 2 arguments /path/to/artefacts /path/to/stock/files"
+	exit 1
+elif [ `echo $2 | cut -c-1` != '/' ]
+then
+	echo "After options, who have to give Absolute paths for 2nd argument /path/to/install/files"
+	exit 1
+elif [ ! -d $1  ]
+then
+	echo "$1 given is not a directory or doesn't exist"
+	exit 1
+fi
+
+
+COMMIT_ID=`echo $CI_COMMIT_SHA | cut -c-8`
+DIR_TO_INSTALL=$2
+VERSION_ID=$CI_COMMIT_REF_NAME ##=branch name
+VERSION_ID=`echo $VERSION_ID | tr - .` ##replace - by .
+RELEASE=`date +%Y.%m.%d.%H.%M.%S`-${COMMIT_ID}
+RELEASE=`echo $RELEASE | tr - .` ##replace - by .
+
+if [ $Rec == 0 ] && [ $Big == 0 ]
+then 
+	name_paquet=`basename $1`
+	echo "Rpmbuild tree creation"
+	mkdir -pv ${HOME}/rpmbuild/{SRPMS,SOURCES,SPECS,RPMS,BUILD,BUILDROOT}
+	
+	echo "Put artifacts: $1 in SOURCES directory"
+	mv -v $1 ${HOME}/rpmbuild/SOURCES/
+
+	echo "Creation of spec file: ${name_paquet}-${VERSION_ID}-${RELEASE}.spec"
+	create_spec_file.sh $name_paquet ${VERSION_ID} ${RELEASE} $DIR_TO_INSTALL   
+
+	echo "Build of rpm for noarch target"
+	rpmbuild -v -bb --target noarch ${HOME}/rpmbuild/SPECS/${name_paquet}-${VERSION_ID}-${RELEASE}.spec
+
+	echo "copy of rpm in CI_OUTPUT_DIR directory, ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}, which will deploy to eos"
+	cp -v ${HOME}/rpmbuild/RPMS/*/*.rpm  ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+
+	echo "Deleting of Rpmbuild tree"
+	rm -rfv ${HOME}/rpmbuild/
+
+elif [ $Rec == 0 ] && [ $Big == 1 ]
+then
+	list=`ls $1/*.rpm`
+	if [ `echo $list | wc -w` -eq 0 ]; then
+		echo "There is no rpms in $1 , impossible to create big rpm package with dependencies"
+		exit 1
+	fi
+	cp -v $list ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+	list=`basename -a $list`
+	let i=0
+	for file in $list
+	do
+		list[$i]=`echo $file | rev | cut -d - -f 3- | rev`
+		let i+=1
+	done
+	echo "rpms found : ${list[*]}"
+else
+	list=`ls -d $1/*/`
+	if [ `echo $list | wc -w` -eq 0 ]
+	then
+		echo "There is no subdirectory in $1 , impossible to create rpms"
+		exit 1
+	fi
+	list=`basename -a $list`
+
+	for name in $list
+	do	
+		echo "Rpmbuild tree creation"
+		mkdir -pv ${HOME}/rpmbuild/{SRPMS,SOURCES,SPECS,RPMS,BUILD,BUILDROOT}
+	
+		echo "Put artifacts: $1 in SOURCES directory"
+		mv -v $1/$name ${HOME}/rpmbuild/SOURCES/
+
+		echo "Creation of spec file: ${name}-${VERSION_ID}-${RELEASE}.spec"
+		create_spec_file.sh $name ${VERSION_ID} ${RELEASE} $DIR_TO_INSTALL   
+
+		echo "Build of rpm for noarch target"
+		rpmbuild -v -bb --target noarch ${HOME}/rpmbuild/SPECS/${name}-${VERSION_ID}-${RELEASE}.spec
+
+		echo "copy of rpm in CI_OUTPUT_DIR directory, ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}, which will deploy to eos"
+		cp -v ${HOME}/rpmbuild/RPMS/*/*.rpm  ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+
+		echo "Deleting of Rpmbuild tree"
+		rm -rfv ${HOME}/rpmbuild/
+	done
+fi
+
+if [ $Big == 1 ]
+then		
+	name_paquet=`basename $1`
+	
+	echo "Rpmbuild tree creation"
+	mkdir -pv ${HOME}/rpmbuild/{SRPMS,SOURCES,SPECS,RPMS,BUILD,BUILDROOT}
+	
+	echo "Creation of spec file: ${name_paquet}-${VERSION_ID}-${RELEASE}.spec"
+	create_spec_file.sh $name_paquet ${VERSION_ID} ${RELEASE} $DIR_TO_INSTALL ${list[*]}
+
+	echo "Build of rpm for noarch target"
+	rpmbuild -v -bb --target noarch ${HOME}/rpmbuild/SPECS/${name_paquet}-${VERSION_ID}-${RELEASE}.spec
+	
+	echo "copy of rpm in CI_OUTPUT_DIR directory, ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}, which will deploy to eos"
+	cp -v ${HOME}/rpmbuild/RPMS/*/*.rpm  ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+
+	echo "Deleting of Rpmbuild tree"
+	rm -rfv ${HOME}/rpmbuild/
+fi
+
+exit 0
+
