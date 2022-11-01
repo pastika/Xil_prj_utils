@@ -100,8 +100,7 @@ variables:
     before_script:      
         - mkdir -p ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
     script:
-        - export PATH=${CI_PROJECT_DIR}/prj_utils/bin/:${PATH}
-        - echo $PATH
+        - export PATH=${CI_PROJECT_DIR}/prj_utils/cd-tools/bin/:${PATH}
         - mkdir -p ${CI_PROJECT_NAME}
         # TODO: make this reasonable, ideally so that it can be called per design directly at the project including this
         - mv ${JOB_NAME} ${CI_PROJECT_NAME}
@@ -114,8 +113,7 @@ variables:
         # See https://gitlab.cern.ch/ci-tools/ci-web-deployer#contents
         EOS_PATH: ${EOS_ROOT}/rpms/
     script:
-        - export PATH=${CI_PROJECT_DIR}/prj_utils/bin/:${PATH}
-        - echo $PATH
+        - export PATH=${CI_PROJECT_DIR}/prj_utils/cd-tools/bin/:${PATH}
         - echo "Deploying from [${CI_OUTPUT_DIR}] to [${EOS_PATH}]"
         - deploy-eos
         - updaterepo ${EOS_ROOT}
