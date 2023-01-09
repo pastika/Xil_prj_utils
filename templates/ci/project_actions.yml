@@ -6,6 +6,11 @@ variables:
   # set unique directory for each git checkout https://docs.gitlab.com/ee/ci/runners/README.html#handling-concurrency
   # this setting needs debugging
   GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/$CI_PROJECT_PATH 
+  # Variables for RPM production and deployment
+  EOS_ROOT: /eos/user/h/hgcwebsw/www/repository
+  # $CI_OUTPUT_DIR is used by deploy-eos
+  # See https://gitlab.cern.ch/ci-tools/ci-web-deployer#contents
+  CI_OUTPUT_DIR: rpm_path
 
 .list_project:
     image: python:latest
@@ -61,3 +66,54 @@ variables:
     # parallel:
     #     matrix:
     #         - JOB_NAME: [design]
+
+.build_rpm_common:
+    image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
+    variables:
+    artifacts:
+        paths:
+            - ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+
+.build_rpm_from_spec:
+    extends: .build_rpm_common
+    variables:
+        SPEC_FILE: ${CI_PROJECT_NAME}.spec
+    before_script:      
+        - mkdir -p ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+        - mkdir -p $HOME/rpmbuild/{SOURCES,RPMS,SPECS,BUILD,BUILDROOT}
+        - cp ${SPEC_FILE} $HOME/rpmbuild/SPECS
+    # To use this template provide a `script` section that copies files over
+    # script: cp file_src $HOME/rpmbuild/SOURCES/file_dst
+    after_script:
+        - cd $HOME
+        - export __version__=`date +%Y.%m.%d.%H.%M.%S`
+        - export __commitid__=`echo ${CI_COMMIT_SHA} | cut -c-8`
+        - rpmbuild -bb --target=noarch rpmbuild/SPECS/${SPEC_FILE}
+        - mv rpmbuild/RPMS/*/*.rpm ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+        - rm -rf $HOME/rpmbuild
+
+.build_rpm_for_fw:
+    extends: .build_rpm_common
+    variables:
+        FW_INSTALL_PATH: /opt/cms-hgcal-firmware/hgc-test-systems
+        TYPE: "-R" # "-R" is for individual RPMs and "-B" for the meta ones
+    before_script:      
+        - mkdir -p ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
+    script:
+        - export PATH=${CI_PROJECT_DIR}/prj_utils/cd-tools/bin/:${PATH}
+        - mkdir -p ${CI_PROJECT_NAME}
+        # TODO: make this reasonable, ideally so that it can be called per design directly at the project including this
+        - mv ${JOB_NAME} ${CI_PROJECT_NAME}
+        - create_packages ${TYPE} ${CI_PROJECT_NAME} ${FW_INSTALL_PATH}
+
+.deploy_rpm:
+    image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
+    variables:
+        # $EOS_PATH is how to tell deploy-eos where to send files to.
+        # See https://gitlab.cern.ch/ci-tools/ci-web-deployer#contents
+        EOS_PATH: ${EOS_ROOT}/rpms/
+    script:
+        - export PATH=${CI_PROJECT_DIR}/prj_utils/cd-tools/bin/:${PATH}
+        - echo "Deploying from [${CI_OUTPUT_DIR}] to [${EOS_PATH}]"
+        - deploy-eos
+        - updaterepo ${EOS_ROOT}
