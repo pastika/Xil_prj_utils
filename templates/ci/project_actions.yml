@@ -48,6 +48,7 @@ variables:
         - ./project xml    ${JOB_NAME}
         - ./project report ${JOB_NAME}
     artifacts:
+        when: always
         name: ${JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_PIPELINE_IID}-${CI_COMMIT_SHORT_SHA}-debug
         paths:
         - ${JOB_NAME}
