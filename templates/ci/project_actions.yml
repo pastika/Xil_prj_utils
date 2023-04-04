@@ -102,9 +102,10 @@ variables:
         - mkdir -p ${CI_PROJECT_DIR}/${CI_OUTPUT_DIR}
     script:
         - export PATH=${CI_PROJECT_DIR}/prj_utils/cd-tools/bin/:${PATH}
+        - mv ${JOB_NAME} temporary_directory
         - mkdir -p ${CI_PROJECT_NAME}
         # TODO: make this reasonable, ideally so that it can be called per design directly at the project including this
-        - mv ${JOB_NAME} ${CI_PROJECT_NAME}
+        - mv temporary_directory ${CI_PROJECT_NAME}
         - create_packages ${TYPE} ${CI_PROJECT_NAME} ${FW_INSTALL_PATH}
 
 .deploy_rpm:
