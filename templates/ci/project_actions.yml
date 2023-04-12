@@ -18,7 +18,7 @@ variables:
     variables:
         XILVERSION: 0 # Change this to the version number
     tags:
-        - docker-privileged-xl
+        - docker-xxl
     image:
         name: gitlab-registry.cern.ch/cce/docker_build/vivado:${XILVERSION}
     before_script:
