@@ -9,6 +9,8 @@ variables:
 
 .list_project:
     image: python:latest
+    tags:
+        - docker
     before_script:
         - pip install --no-cache-dir -r requirements.txt
     script:
