@@ -1,3 +1,6 @@
 [submodule "device-tree-xlnx"]
 	path = device-tree-xlnx
 	url = ../../cms-hgcal-firmware/device-tree-xlnx.git
+[submodule "cd-tools"]
+	path = cd-tools
+	url = ../../hgcal-daq-sw/docker-images/cd-tools
