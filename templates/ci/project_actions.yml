@@ -14,6 +14,8 @@ variables:
 
 .list_project:
     image: python:latest
+    tags:
+        - docker
     before_script:
         - pip install --no-cache-dir -r requirements.txt
     script:
@@ -23,7 +25,7 @@ variables:
     variables:
         XILVERSION: 0 # Change this to the version number
     tags:
-        - docker-privileged-xl
+        - docker-xxl
     image:
         name: gitlab-registry.cern.ch/cce/docker_build/vivado:${XILVERSION}
     before_script:
@@ -72,6 +74,8 @@ variables:
 
 .build_rpm_common:
     image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
+    tags:
+        - docker
     variables:
     artifacts:
         paths:
@@ -112,6 +116,8 @@ variables:
 
 .deploy_rpm:
     image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
+    tags:
+        - docker
     variables:
         # $EOS_PATH is how to tell deploy-eos where to send files to.
         # See https://gitlab.cern.ch/ci-tools/ci-web-deployer#contents
