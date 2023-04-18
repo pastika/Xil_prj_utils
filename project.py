@@ -177,7 +177,11 @@ def projectBuild(projectCfg, stage_start, stage_end, force=False):
     prj_path = os.path.join(basePath, projectCfg["baseDirName"])
     prj_name = os.path.join(basePath, projectCfg["baseDirName"], projectCfg["project"])
     repoPath = os.path.join(basePath, "prj_utils/device-tree-xlnx")
-    processor = projectCfg["processor"]
+    if "processor" in projectCfg:
+        processor = projectCfg["processor"]
+    else:
+        print(f'Using default processor "psu_cortexa53_0" for {projectCfg["baseDirName"]} because no "processor" field was found in projects.yaml')
+        processor = "psu_cortexa53_0"
 
     # device tree file name
     dtsiname = "pl.dtsi"
