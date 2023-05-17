@@ -14,4 +14,4 @@ class UHALXMLProducer(UHALXMLProducerBase):
     def produce_impl(self, fragment, xmlDir, address, label):
         size = self.getProperty(fragment, 'reg', 4)
         
-        return top_level_node_template%{"label": label, "addr": address, "size": size}
+        return top_level_node_template%{"label": label, "addr": address, "size": size//4}
