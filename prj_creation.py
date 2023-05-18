@@ -30,7 +30,7 @@ src_footer = """      <Config>
     </FileSet>"""
   
 xdc_header = """    <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
-          <Filter Type="Constrs"/>"""
+      <Filter Type="Constrs"/>"""
   
 xdc_entry = """      <File Path="$PPRDIR/%(filePath)s">
         <FileInfo>
@@ -236,11 +236,11 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
 
 
 template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
-<!-- Product Version: Vivado v2019.2 (64-bit)              -->
+<!-- Product Version: Vivado v2021.2 (64-bit)              -->
 <!--                                                         -->
-<!-- Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.   -->
+<!-- Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="44" Path="./%(proj_name)s">
+<Project Version="7" Minor="56" Path="./%(proj_name)s">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="b2c57fb812724b1f8aa4de52fe4c2167"/>
@@ -321,13 +321,12 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
       <Option Name="Description" Val="Riviera-PRO Simulator"/>
     </Simulator>
   </Simulators>
-  <Runs Version="1" Minor="11">
+  <Runs Version="1" Minor="15">
     <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="%(synth_part)s>
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
       </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
@@ -345,7 +344,6 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
         <Step Id="post_route_phys_opt_design"/>
         <Step Id="write_bitstream"/>
       </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
@@ -394,8 +392,8 @@ ip_repo_template = """    <Option Name="IPRepoPath" Val="$PPRDIR/../%s"/>"""
 
 def generate_golden (prj_name, dev_name, brd_name, ip_repo_list, basePath=".."):
     # constants   
-    synth_suffix = '" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true"'
-    impl_suffix = '" ConstrsSet="constrs_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" GenFullBitstream="true"'
+    synth_suffix = '" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_1"'
+    impl_suffix = '" ConstrsSet="constrs_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" SynthRun="synth_1" IncludeInArchive="true" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/impl_1"'
     
     outfile = template_xpr%{"proj_name"  : prj_name,
                             "dev_name"   : dev_name,
