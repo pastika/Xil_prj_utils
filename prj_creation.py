@@ -118,6 +118,7 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
 
     if (("hdl"      in fileListDict and (fileListDict["hdl"]      is not None) and len(fileListDict["hdl"]) > 0) or
         ("bd"       in fileListDict and (fileListDict["bd"]       is not None) and len(fileListDict["bd"]) > 0) or
+        ("xci"      in fileListDict and (fileListDict["xci"]      is not None) and len(fileListDict["xci"]) > 0) or
         ("coe"      in fileListDict and (fileListDict["coe"]      is not None) and len(fileListDict["coe"]) > 0) or
         ("sim"      in fileListDict and (fileListDict["sim"]      is not None) and len(fileListDict["sim"]) > 0) or
         ("ip_files" in fileListDict and (fileListDict["ip_files"] is not None) and len(fileListDict["ip_files"]) > 0)):
@@ -176,6 +177,17 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
                     fileSetsStrs.append(src_entry%{"filePath": filePath,
                                                    "fileinfo": src_entry_v,
                                                    "attributes": "\n".join([src_entry_synth]) })
+
+        # add xci files
+        if "xci"  in fileListDict and fileListDict["xci"] is not None:
+            for filePath in fileListDict["xci"]:
+                filePath = os.path.relpath(os.path.join(basePath, filePath))
+                if os.path.isfile(filePath):
+                    ext = os.path.splitext(filePath)[1]
+                    print("[info]: Added xci file %s"%filePath)
+                    fileSetsStrs.append(src_entry%{"filePath": filePath,
+                                                   "fileinfo": src_entry_v,
+                                                   "attributes": "\n".join([src_entry_synth, src_entry_impl, src_entry_sim]) })
 
 
         fileSetsStrs.append(src_footer%{"topmod":fileListDict["topMod"]})
