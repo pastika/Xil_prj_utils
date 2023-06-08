@@ -2,7 +2,7 @@ import yaml
 import os
 
 filesets_header = '  <FileSets Version="1" Minor="31">\n'
-  
+
 src_header = """    <FileSet Name="sources_1" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
       <Filter Type="Srcs"/>"""
 
@@ -28,22 +28,22 @@ src_footer = """      <Config>
         <Option Name="TopModule" Val="%(topmod)s"/>
       </Config>
     </FileSet>"""
-  
+
 xdc_header = """    <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
           <Filter Type="Constrs"/>"""
-  
+
 xdc_entry = """      <File Path="$PPRDIR/%(filePath)s">
         <FileInfo>
           <Attr Name="UsedIn" Val="implementation"/>
         </FileInfo>
       </File>"""
-  
+
 xdc_footer = """      <Config>
         <Option Name="TargetConstrsFile" Val="$PPRDIR/%(filePath)s"/>
         <Option Name="ConstrsType" Val="XDC"/>
       </Config>
     </FileSet>"""
-  
+
 sim_entry = """    <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
       <Filter Type="Srcs"/>
       <Config>
@@ -63,7 +63,7 @@ util_entry = """    <FileSet Name="utils_1" Type="Utils" RelSrcDir="$PSRCDIR/uti
         <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>"""
-  
+
 filesets_footer = '  </FileSets>'
 
 
@@ -71,20 +71,20 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     # ---------------------------
     # Constants
     # ---------------------------
-    
-    
+
+
     # ---------------------------
     # Step 1: remove source files
     # ---------------------------
-    
+
     print("------------------------------------------------------------------------------------------")
     print("[info]: start")
     print("------------------------------------------------------------------------------------------")
    # file copy -force $prj_name $prj_name.bak
-  
+
     outfile = ""
     outFileLines = []
-  
+
     with open(golden_name, "r") as infile:
         foundFileSets = False
         for line in infile:
@@ -95,7 +95,7 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
                 foundFileSets = False
             elif not foundFileSets:
                 outFileLines.append(line)
-    
+
     outfile = "".join(outFileLines)
 
     # ---------------------------
@@ -103,7 +103,7 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     # ---------------------------
 
     fileSetsStrs = []
-    
+
     # with open(os.path.join(basePath, filelist), "r") as cfg:
     #     try:
     #         fileListDict = yaml.safe_load(cfg)
@@ -115,15 +115,15 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     # ---------------------------
     # Step 2b: format source files
     # ---------------------------
-    
+
     if (("hdl"      in fileListDict and (fileListDict["hdl"]      is not None) and len(fileListDict["hdl"]) > 0) or
         ("bd"       in fileListDict and (fileListDict["bd"]       is not None) and len(fileListDict["bd"]) > 0) or
         ("coe"      in fileListDict and (fileListDict["coe"]      is not None) and len(fileListDict["coe"]) > 0) or
         ("sim"      in fileListDict and (fileListDict["sim"]      is not None) and len(fileListDict["sim"]) > 0) or
         ("ip_files" in fileListDict and (fileListDict["ip_files"] is not None) and len(fileListDict["ip_files"]) > 0)):
-      
+
         fileSetsStrs.append(filesets_header)
-      
+
         fileSetsStrs.append(src_header)
 
         # add hdl files
@@ -179,13 +179,13 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
 
 
         fileSetsStrs.append(src_footer%{"topmod":fileListDict["topMod"]})
-    
+
     # ---------------------------
     # Step 3b: format constraints
     # ---------------------------
     if ("xdc" in fileListDict and len(fileListDict["xdc"]) > 0) or ("xdcTarget" in fileListDict):
         fileSetsStrs.append(xdc_header)
-      
+
         if "xdc" in fileListDict and len(fileListDict["xdc"]) > 0:
             for filePath in fileListDict["xdc"]:
                 filePath = os.path.relpath(os.path.join(basePath, filePath))
@@ -209,9 +209,9 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
     else:
         fileSetsStrs.append(sim_entry%(sim_entry_top_auto))
     fileSetsStrs.append(util_entry)
-  
+
     fileSetsStrs.append(filesets_footer)
-  
+
     # ---------------------------
     # Step 4: combine the two parts
     # ---------------------------
@@ -221,14 +221,14 @@ def update_filesets (golden_name, prj_name, fileListDict, basePath=".."):
 
 
     # ---------------------------
-    # Step 5: Generate wrapper for all bd files 
+    # Step 5: Generate wrapper for all bd files
     # ---------------------------
 
     if "bd"  in fileListDict:
         for filePath in fileListDict["bd"]:
             fileName = os.path.basename(filePath)
             os.system('vivado -mode batch -source %s -tclargs %s'%(os.path.abspath(os.path.join(basePath, "prj_utils/tcl/create_bd_wrapper.tcl")), "%s %s"%(prj_name, fileName)))
-    
+
 
     print("------------------------------------------------------------------------------------------")
     print("[info]: done")
@@ -393,10 +393,10 @@ template_xpr = """<?xml version="1.0" encoding="UTF-8"?>
 ip_repo_template = """    <Option Name="IPRepoPath" Val="$PPRDIR/../%s"/>"""
 
 def generate_golden (prj_name, dev_name, brd_name, ip_repo_list, basePath=".."):
-    # constants   
+    # constants
     synth_suffix = '" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true"'
     impl_suffix = '" ConstrsSet="constrs_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" GenFullBitstream="true"'
-    
+
     outfile = template_xpr%{"proj_name"  : prj_name,
                             "dev_name"   : dev_name,
                             "board_part" : brd_name,
