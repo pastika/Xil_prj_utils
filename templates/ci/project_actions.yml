@@ -14,8 +14,6 @@ variables:
 
 .list_project:
     image: python:latest
-    tags:
-        - docker-machine
     before_script:
         - pip install --no-cache-dir -r requirements.txt
     script:
@@ -74,8 +72,6 @@ variables:
 
 .build_rpm_common:
     image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
-    tags:
-        - docker-machine
     variables:
     artifacts:
         paths:
@@ -116,8 +112,6 @@ variables:
 
 .deploy_rpm:
     image: gitlab-registry.cern.ch/hgcal-daq-sw/docker-images/cd-tools
-    tags:
-        - docker-machine
     variables:
         # $EOS_PATH is how to tell deploy-eos where to send files to.
         # See https://gitlab.cern.ch/ci-tools/ci-web-deployer#contents
